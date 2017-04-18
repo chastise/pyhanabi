@@ -3,14 +3,15 @@ from random import shuffle, Random
 
 class Deck(object):
 
-    def __init__(self, colors, values=(1, 1, 1, 2, 2, 3, 3, 4, 4, 5), seed=False):
-        self.colors = colors
+    def __init__(self, colors=('r', 'y', 'g', 'w', 'b'), numbers=(1, 1, 1, 2, 2, 3, 3, 4, 4, 5), seed=False):
+        self.card_colors = colors
+        self.card_numbers = numbers
 
         deck = []
 
-        for color in self.colors:
-            for value in values:
-                deck.append(Card(value, color))
+        for color in self.card_colors:
+            for number in self.card_numbers:
+                deck.append(Card(number, color))
 
         self.deck = deck
 
@@ -40,4 +41,7 @@ class Deck(object):
         return len(self.deck)
 
     def get_deck_colors(self):
-        return self.colors
+        return self.card_colors
+
+    def get_deck_numbers(self):
+        return self.card_numbers
