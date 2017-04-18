@@ -5,4 +5,4 @@ Built to allow experimentation with various artificial intelligence algorithms a
 
 Open to feedback, pull requests and bug reports. 
 
-Built for Python 2.7, on top of just the standard library.
+Built for Python 2.7. Testing will (probably) use the pytest module, otherwise everything is done in the standard library. 
