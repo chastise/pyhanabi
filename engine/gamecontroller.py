@@ -26,7 +26,7 @@ class GameController(object):
 
     def deal_initial_hand(self):
         cards_to_deal = 5
-        if len(self.players) < 3:
+        if len(self.players) > 3:
             cards_to_deal = 4
         for rounds in range(cards_to_deal):
             for player in range(len(self.players)):
@@ -35,7 +35,7 @@ class GameController(object):
 
     def game_over(self, player_id):
         # Check if we blew up
-        if self.master_game_state.board.count_fuse_tokens() < 1:
+        if self.master_game_state.board.fuse_tokens < 1:
             print("no more fuses")
             return True
         # Check if we've completed all the stacks
@@ -57,7 +57,7 @@ class GameController(object):
     # Turn order: move, check end, draw card, initiate final round, next player
     def play_game(self):
         self.deal_initial_hand()
-        self.master_game_state.board.update_deck_size(len(self.deck))
+        self.master_game_state.board.deck_size=len(self.deck)
         for player_id in cycle(range(len(self.players))):
             player_game_state = PlayerGameState(self.master_game_state, player_id)
             new_move = self.players[player_id].make_move(player_game_state)
@@ -74,7 +74,7 @@ class GameController(object):
             if len(self.deck) > 0:
                 self.player_hands[player_id].append(self.deck.draw_card())
                 self.master_game_state.player_hands = self.player_hands
-                self.master_game_state.board.update_deck_size(len(self.deck))
+                self.master_game_state.board.deck_size=len(self.deck)
             # This triggers when the last card is drawn, every player including this one takes one more turn.
             if len(self.deck) == 0 and self.game_almost_over is None:
                 self.game_almost_over = player_id

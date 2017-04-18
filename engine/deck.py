@@ -30,4 +30,3 @@ class Deck(object):
         if len(self.card_list) > 0:
             return self.card_list.pop()
         return False
-

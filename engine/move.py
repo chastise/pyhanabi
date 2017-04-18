@@ -1,3 +1,5 @@
+from engine.gamestate import GameState
+
 class Move(object):
     """Moves must either play, discard or share information with another player about their hand.
     Args:
@@ -34,16 +36,16 @@ class Move(object):
 
     def __str__(self):
         if self.move_type in ('play', 'discard'):
-            return self.move_type + ' card index ' + str(self.card_index) + ' in their hand'
+            return '{move_type} card index {card_index} in their hand'.format(move_type=self.move_type,
+                                                                              card_index=self.card_index)
         else:
-            return self.move_type + ' with ' + str(self.information)
+            return '{move_type} with {information}'.format(move_type=self.move_type, information=self.information)
 
     def __repr__(self):
         return str(self)
 
     # Either play index, discard index or give information
     def is_playable(self, game_state):
-        from engine.gamecontroller import GameState, PlayerGameState
         assert isinstance(game_state, GameState)
         # If discard or play, just make sure the card's actually in the player's hand.
         if self.move_type in ('discard', 'play'):
@@ -55,7 +57,7 @@ class Move(object):
             target_player_id = self.information['player_id']
             if target_player_id == self.player_index:
                 return False
-            if game_state.board.count_clock_tokens() < 1:
+            if game_state.board.clock_tokens < 1:
                 return False
             target_hand = game_state.player_hands[target_player_id]
             information_detail = self.information['information']
@@ -79,12 +81,14 @@ class Move(object):
             board = game_state.board
             board.discard_card(player_card)
             board.add_clock_token()
-        elif self.move_type == 'play': # TODO: Firework completion bonus for play
+        elif self.move_type == 'play':
             player_hand = game_state.player_hands[self.player_index]
             player_card = player_hand.pop(self.card_index)
             card_stack = game_state.board.get_card_stack(player_card.color)
             if card_stack.is_legal_play(player_card):
                 card_stack.play(player_card)
+                if card_stack.is_complete():
+                    game_state.board.add_clock_token()
             else:
                 game_state.board.discard_card(player_card)
                 game_state.board.use_fuse_token()

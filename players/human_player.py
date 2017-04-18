@@ -39,7 +39,7 @@ class HumanPlayer(Player):
             information = False
             while player_id not in [str(i) for i in range(len(game_state.player_hands))] or player_id == str(game_state.get_my_id()):
                 player_id = raw_input("Which player would you like to give information?")
-            print("Player {pid}'s hand: {hand}".format(pid=player_id, hand=str(game_state.player_hands[player_id])))
+            print("Player {pid}'s hand: {hand}".format(pid=player_id, hand=str(game_state.player_hands[int(player_id)])))
 
             while information_type not in ('number', 'color'):
                 information_type = raw_input("Would you like to share a number or a color?")

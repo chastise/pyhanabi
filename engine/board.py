@@ -20,9 +20,9 @@ class Board(object):
 
     def __str__(self):
         return "Deck Size: {deck_size}, Clock Tokens: {clock_tokens}, Fuse Tokens: {fuse_tokens}," \
-               "Card Stacks: {card_stacks}\nDiscard Stats: {discard}".format(deck_size=self.get_remaining_cards(),
-                                                                             clock_tokens=self.count_clock_tokens(),
-                                                                             fuse_tokens=self.count_fuse_tokens(),
+               "Card Stacks: {card_stacks}\nDiscard Stats: {discard}".format(deck_size=self.deck_size,
+                                                                             clock_tokens=self.clock_tokens,
+                                                                             fuse_tokens=self.fuse_tokens,
                                                                              card_stacks=[stack for stack in
                                                                                           self.card_stacks.values()],
                                                                              discard=self.discard_stats
@@ -35,15 +35,6 @@ class Board(object):
         assert isinstance(card, Card)
         self.discard.append(card)
         self.discard_stats[card.color][card.number - 1] += 1
-
-    def get_remaining_cards(self):
-        return self.deck_size
-
-    def count_clock_tokens(self):
-        return self.clock_tokens
-
-    def count_fuse_tokens(self):
-        return self.fuse_tokens
 
     def use_clock_token(self):
         assert self.clock_tokens > 0
@@ -60,9 +51,6 @@ class Board(object):
     def get_card_stack(self, color):
         assert color in self.card_stacks.keys()
         return self.card_stacks[color]
-
-    def update_deck_size(self, new_deck_size):
-        self.deck_size = new_deck_size
 
     def compute_score(self):
         total_score = 0
