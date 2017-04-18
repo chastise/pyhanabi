@@ -1,6 +1,6 @@
-from engine.game import *
+from engine.gamecontroller import *
 from players.human_player import *
 
-g = Game(players=[HumanPlayer(), HumanPlayer()])
+g = GameController(players=[HumanPlayer(), HumanPlayer()])
 
 score = g.play_game()

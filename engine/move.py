@@ -43,7 +43,7 @@ class Move(object):
 
     # Either play index, discard index or give information
     def is_playable(self, game_state):
-        from engine.game import GameState, PlayerGameState
+        from engine.gamecontroller import GameState, PlayerGameState
         assert isinstance(game_state, GameState)
         # If discard or play, just make sure the card's actually in the player's hand.
         if self.move_type in ('discard', 'play'):

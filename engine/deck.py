@@ -3,45 +3,31 @@ from random import shuffle, Random
 
 class Deck(object):
 
-    def __init__(self, colors=('r', 'y', 'g', 'w', 'b'), numbers=(1, 1, 1, 2, 2, 3, 3, 4, 4, 5), seed=False):
+    def __init__(self, colors=('r', 'y', 'g', 'w', 'b'), numbers=(1, 1, 1, 2, 2, 3, 3, 4, 4, 5), seed=None):
         self.card_colors = colors
         self.card_numbers = numbers
 
-        deck = []
-
+        self.card_list = []
         for color in self.card_colors:
             for number in self.card_numbers:
-                deck.append(Card(number, color))
-
-        self.deck = deck
+                self.card_list.append(Card(number, color))
 
         if seed:
-            Random(seed).shuffle(self.deck)
+            Random(seed).shuffle(self.card_list)
         else:
-            shuffle(self.deck)
+            shuffle(self.card_list)
 
     def __len__(self):
-        return len(self.deck)
+        return len(self.card_list)
+
+    def __str__(self):
+        return "Deck: {card_list}".format(card_list=self.card_list)
 
     def __repr__(self):
-        return "Deck: {cardlist}".format(cardlist=[c for c in self.deck])
+        return str(self)
 
     def draw_card(self):
-        if len(self.deck) > 0:
-            return self.deck.pop()
+        if len(self.card_list) > 0:
+            return self.card_list.pop()
         return False
 
-    def _get_deck(self):
-        return self.deck
-
-    def get_deck_size(self):
-        return len(self.deck)
-
-    def get_num_cards_remaining(self):
-        return len(self.deck)
-
-    def get_deck_colors(self):
-        return self.card_colors
-
-    def get_deck_numbers(self):
-        return self.card_numbers
