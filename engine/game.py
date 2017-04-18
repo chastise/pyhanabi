@@ -20,10 +20,9 @@ class Game(object):
         self.deck = Deck(self.colors, seed=deck_seed)
         self.player_hands = [[] for _ in range(len(self.players))]
         self.master_game_state = GameState(Board(self.colors,
-                                                 self.deck.get_deck_size(),
+                                                 len(self.deck),
                                                  range(len(self.players))),
-                                                 self.player_hands
-                                           )
+                                                 self.player_hands)
         self.game_almost_over = None
 
     def deal_initial_hand(self):
@@ -59,7 +58,7 @@ class Game(object):
     # Turn order: move, check end, draw card, initiate final round, next player
     def play_game(self):
         self.deal_initial_hand()
-        self.master_game_state.board.update_deck_size(self.deck.get_deck_size())
+        self.master_game_state.board.update_deck_size(len(self.deck))
         for player_id in cycle(range(len(self.players))):
             player_game_state = PlayerGameState(self.master_game_state, player_id)
             new_move = self.players[player_id].make_move(player_game_state)
@@ -72,12 +71,12 @@ class Game(object):
                 game_score = self.master_game_state.board.compute_score()
                 print("Game over: Score {score}".format(score=game_score))
                 return game_score
-            if self.deck.get_deck_size() > 0:
+            if len(self.deck) > 0:
                 self.player_hands[player_id].append(self.deck.draw_card())
                 self.master_game_state.player_hands = self.player_hands
-                self.master_game_state.board.update_deck_size(self.deck.get_deck_size())
+                self.master_game_state.board.update_deck_size(len(self.deck))
             # This triggers when the last card is drawn, every player including this one takes one more turn.
-            if self.deck.get_deck_size() == 0 and self.game_almost_over == None:
+            if len(self.deck) == 0 and self.game_almost_over == None:
                 self.game_almost_over = player_id
 
 

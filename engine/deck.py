@@ -3,23 +3,14 @@ from random import shuffle, Random
 
 class Deck(object):
 
-    def __init__(self, colors, seed=False):
+    def __init__(self, colors, values=(1, 1, 1, 2, 2, 3, 3, 4, 4, 5), seed=False):
         self.colors = colors
 
         deck = []
 
-        # Not sure if this would look prettier rolled into more loops
         for color in self.colors:
-            deck.append(Card(1, color))
-            deck.append(Card(1, color))
-            deck.append(Card(1, color))
-            deck.append(Card(2, color))
-            deck.append(Card(2, color))
-            deck.append(Card(3, color))
-            deck.append(Card(3, color))
-            deck.append(Card(4, color))
-            deck.append(Card(4, color))
-            deck.append(Card(5, color))
+            for value in values:
+                deck.append(Card(value, color))
 
         self.deck = deck
 
@@ -28,6 +19,8 @@ class Deck(object):
         else:
             shuffle(self.deck)
 
+    def __len__(self):
+        return len(self.deck)
 
     def __repr__(self):
         return "Deck: {cardlist}".format(cardlist=[c for c in self.deck])
