@@ -1,9 +1,11 @@
 class Card(object):
     def __init__(self, number, color):
+        assert isinstance(number, int)
         self.number = number
+        assert isinstance(color, str)
         self.color = color
-        self.public_color = False
-        self.public_number = False
+        self.public_color = None
+        self.public_number = None
         self.in_your_hand = False
 
     def __eq__(self, other):
@@ -26,13 +28,14 @@ class Card(object):
         elif information_type == 'number':
             self.public_number = self.number
         else:
-            raise Exception("type must be either 'color' or 'number'")
+            raise ValueError("type must be either 'color' or 'number'")
 
 
 class YourCard(Card):
     def __init__(self, card):
-        self._number = False
-        self._color = False
+        assert isinstance(card, Card)
+        self.number = False
+        self.color = False
         self.public_number = card.public_number
         self.public_color = card.public_color
         self.in_your_hand = True
@@ -44,6 +47,7 @@ class YourCard(Card):
     def __repr__(self):
         return str(self)
 
-    def make_public(self, type):
+    # Todo: Figure out if this is unneeded. Players shouldn't run it on other cards, but it doesn't hurt anything
+    def make_public(self, information_type):
         raise Exception("Cannot make YourCards public because actual attributes are hidden.")
 
