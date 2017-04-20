@@ -5,7 +5,7 @@ import random
 
 
 class RandomPlayer(Player):
-    """A real live human player"""
+    """A real dumb AI player"""
 
     def __str__(self):
         return "RandomPlayer"
@@ -15,14 +15,7 @@ class RandomPlayer(Player):
 
     def make_random_legal_move(self, game_state):
         chosen_move = random.choice(self.construct_all_legal_moves(game_state))
-        try:
-            assert chosen_move.is_playable(game_state)
-        except AssertionError:
-            print "Chosen move was unplayable: {move} ;".format(move=chosen_move)
-            print(game_state.board)
-            print(game_state.player_hands)
-            print(game_state.player_id)
-            chosen_move.is_playable(game_state)
+        assert chosen_move.is_playable(game_state)
         return chosen_move
 
     def construct_all_legal_moves(self, game_state):
@@ -58,3 +51,4 @@ class RandomPlayer(Player):
                                                        'information': number}))
 
         return moves
+
