@@ -93,7 +93,7 @@ class Move(object):
                 game_state.board.discard_card(player_card)
                 game_state.board.use_fuse_token()
         elif self.move_type == 'give_information':
-            print("applying information")
+            #print("applying information")
             target_player = self.information['player_id']
             target_players_hand = game_state.player_hands[target_player]
             if self.information['information_type'] == 'number':
