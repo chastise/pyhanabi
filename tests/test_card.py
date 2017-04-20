@@ -2,7 +2,6 @@ from engine.card import Card, YourCard
 import pytest
 
 class TestCard:
-
     def test_init(self):
         card_1 = Card(2, 'b')
         assert card_1.color == 'b'

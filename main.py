@@ -1,6 +1,7 @@
 from engine.gamecontroller import *
 from players.human_player import *
+from players.random_player import *
 
-g = GameController(players=[HumanPlayer(), HumanPlayer()])
 
+g = GameController(players=[RandomPlayer(), RandomPlayer()])
 score = g.play_game()
