@@ -50,7 +50,8 @@ class Move(object):
         # If discard or play, just make sure the card's actually in the player's hand.
         if self.move_type in ('discard', 'play'):
             player_hand = game_state.player_hands[self.player_index]
-            return self.card_index in range(len(player_hand))
+            result = self.card_index in range(len(player_hand))
+            return result
         # If information, check if enough clock_tokens exist and ensure the player_id is not the current player.
         # Information must also be non-zero (e.g. can't indicate "no reds"), so check the target hand for at least one fit.
         elif self.move_type == 'give_information':

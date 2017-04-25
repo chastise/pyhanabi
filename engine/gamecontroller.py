@@ -22,7 +22,6 @@ class GameController(object):
         self.deck = Deck(colors=self.colors, numbers=self.numbers, seed=deck_seed)
         self.player_hands = [[] for _ in range(len(self.players))]
         self.master_game_state = GameState(Board(self.deck), self.player_hands)
-        self.game_almost_over = None
 
     def deal_initial_hand(self):
         cards_to_deal = 5
@@ -47,7 +46,7 @@ class GameController(object):
             print("You win!")
             return True
         # Check if the deck is done and everyone played their final turn:
-        if player_id == self.game_almost_over:
+        if player_id == self.master_game_state.board.game_almost_over:
             print("game almost over")
             print(player_id)
             return True
@@ -57,7 +56,7 @@ class GameController(object):
     # Turn order: move, check end, draw card, initiate final round, next player
     def play_game(self):
         self.deal_initial_hand()
-        self.master_game_state.board.deck_size=len(self.deck)
+        self.master_game_state.board.deck_size = len(self.deck)
         for player_id in cycle(range(len(self.players))):
             player_game_state = PlayerGameState(self.master_game_state, player_id)
             new_move = self.players[player_id].make_move(player_game_state)
@@ -74,7 +73,7 @@ class GameController(object):
             if len(self.deck) > 0:
                 self.player_hands[player_id].append(self.deck.draw_card())
                 self.master_game_state.player_hands = self.player_hands
-                self.master_game_state.board.deck_size=len(self.deck)
+                self.master_game_state.board.deck_size = len(self.deck)
             # This triggers when the last card is drawn, every player including this one takes one more turn.
-            if len(self.deck) == 0 and self.game_almost_over is None:
-                self.game_almost_over = player_id
+            if len(self.deck) == 0 and self.master_game_state.board.game_almost_over is None:
+                self.master_game_state.board.game_almost_over = player_id
