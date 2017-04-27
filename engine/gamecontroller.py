@@ -12,10 +12,10 @@ class GameController(object):
     def __init__(self, players, deck_seed=False):
         num_players = len(players)
         if not 2 <= num_players <= 5:
-            raise Exception("There must be between 2 and 5 players")
+            raise ValueError("There must be between 2 and 5 players to play Hanabi.")
         for player in players:
             if not isinstance(player, Player):
-                raise Exception("All players must inherit from the Player class.")
+                raise ValueError("All players must inherit from the Player class.")
         self.colors = ('r', 'y', 'g', 'w', 'b')  # TODO: rainbow/mixed/wilds
         self.numbers = (1, 1, 1, 2, 2, 3, 3, 4, 4, 5)
         self.players = players
@@ -35,20 +35,21 @@ class GameController(object):
     def game_over(self, player_id):
         # Check if we blew up
         if self.master_game_state.board.fuse_tokens < 1:
-            print("no more fuses")
+            # print("no more fuses")
             return True
         # Check if we've completed all the stacks
         completed_stacks = 0
-        for color, stack in self.master_game_state.board.card_stacks.iteritems():
+        for color in self.colors:
+            stack = self.master_game_state.board.get_card_stack(color)
             if stack.is_complete():
                 completed_stacks += 1
         if completed_stacks == len(self.colors):
-            print("You win!")
+            # print("You win!")
             return True
         # Check if the deck is done and everyone played their final turn:
         if player_id == self.master_game_state.board.game_almost_over:
-            print("game almost over")
-            print(player_id)
+            # print("game almost over")
+            #print(player_id)
             return True
         # Otherwise, the engine is not over
         return False

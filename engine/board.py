@@ -43,7 +43,8 @@ class Board(object):
         self.clock_tokens -= 1
 
     def use_fuse_token(self):
-        assert self.fuse_tokens > 0
+        if self.fuse_tokens < 1:
+            raise Exception("Cannot reduce fuse tokens, current board: {board}".format(board=self))
         self.fuse_tokens -= 1
 
     def add_clock_token(self):

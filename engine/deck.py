@@ -29,4 +29,4 @@ class Deck(object):
     def draw_card(self):
         if len(self.card_list) > 0:
             return self.card_list.pop()
-        return False
+

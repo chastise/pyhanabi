@@ -4,5 +4,5 @@ from players.random_player import *
 from players.basic_mcs_player import *
 
 
-g = GameController(players=[RandomPlayer(), RandomPlayer(), BasicMCSPlayer()])
+g = GameController(players=[BasicMCSPlayer(), BasicMCSPlayer()])
 score = g.play_game()

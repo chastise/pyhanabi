@@ -3,7 +3,7 @@ from engine.gamecontroller import GameController
 from engine.gamestate import PlayerGameState
 from engine.deck import Deck
 from players.shared import util
-import random, copy
+import random, copy, time
 from itertools import cycle
 
 
@@ -24,30 +24,42 @@ class BasicMCSPlayer(Player):
     def make_move(self, game_state):
         print(self)
         available_moves = util.construct_all_legal_moves(game_state)
-        available_move_scores = [0] * len(available_moves)
+        available_move_score_gain = [[] for _ in xrange(len(available_moves))]
         # Create a deck for copy to each simulated move state.
         sim_deck = self.construct_inferred_deck(game_state)
-        initial_score = game_state.board.compute_score()
-        # Score each state first-pass:
-        for move_index, move in enumerate(available_moves):
-            deck = copy.deepcopy(sim_deck)
-            # shuffle deck
-            random.shuffle(deck.card_list)
-            # Draw simulated cards for YourCards in player's hand. Replace YourCards with Cards.
-            my_hand = self.draw_possible_hand(game_state.get_my_hand(), deck)
-            # Copy gamestate and un-YourCard player cards.
-            sim_game_state = copy.deepcopy(game_state)
-            sim_game_state.player_hands[sim_game_state.player_id] = my_hand
-            # Create simulation GameController
-            controller = SimulatedGameController(sim_game_state, deck, move)
-            # Execute move on simulated gamestate
-            available_move_scores[move_index] = controller.play_game()
-            # Continue game with random actors, collect resulting score
-
+        # Score each state in a loop for 2 seconds:
+        time_out = time.time() + 1 # ~3 seconds of looping
+        while time_out > time.time():
+            for move_index, move in enumerate(available_moves):
+                deck = copy.deepcopy(sim_deck)
+                # shuffle deck
+                random.shuffle(deck.card_list)
+                # Draw simulated cards for YourCards in player's hand. Replace YourCards with Cards.
+                my_hand = self.draw_possible_hand(game_state.get_my_hand(), deck)
+                # Copy gamestate and un-YourCard player cards.
+                sim_game_state = copy.deepcopy(game_state)
+                sim_game_state.player_hands[sim_game_state.player_id] = my_hand
+                # Create simulation GameController
+                controller = SimulatedGameController(sim_game_state, deck, move)
+                # Execute move on simulated gamestate
+                score = controller.play_game()
+                available_move_score_gain[move_index].append(score)
+                # Continue game with random actors, collect resulting score
         #print(available_moves)
-        print(available_move_scores)
+        #print(available_move_score_gain)
+        # Trying a dumb score heuristic:
+        #  if the move is discard or give_information, take the mean.
+        #  if the move is play, take the min.
+        for index, move in enumerate(available_moves):
+            if move.move_type == 'play':
+                available_move_score_gain[index] = min(available_move_score_gain[index])
+            else:
+                available_move_score_gain[index] = sum(available_move_score_gain[index]) / \
+                                                   float(len(available_move_score_gain[index]))
+
         # For now, let's be dumb and return the move with the best score:
-        score, index = max([(v,i) for i,v in enumerate(available_move_scores)])
+        print(available_move_score_gain)
+        score, index = max([(v,i) for i,v in enumerate(available_move_score_gain)])
         print(score, index)
         print(available_moves[index])
         return available_moves[index]
@@ -87,6 +99,8 @@ class BasicMCSPlayer(Player):
         # (potentially) repeatedly search the deck and known cards for cards we can use.
         partial_result_hand = []
         while len(known_partial_cards) > 0:
+            print(known_partial_cards)
+            print(partial_result_hand)
             card = known_partial_cards.pop()
             card_found = False
             for index, candidate in enumerate(deck.card_list):
@@ -120,6 +134,8 @@ class BasicMCSPlayer(Player):
             result_hand.append(card_tuple)
         # Draw some cards from the deck for cards with no info
         for card in unknown_cards:
+            if len(deck) < 1:
+                raise Exception("Tried to fill in an unknown card in hand but deck was empty")
             result_hand.append((deck.draw_card(), card[1]))
         # Order the whole hand by the original order:
         result_hand.sort(key=lambda x: x[1])
@@ -140,10 +156,12 @@ class MCSRandomPlayer(Player):
         return "MCSRandomPlayer"
 
     def make_move(self, game_state):
+        print(game_state.board)
+        print(game_state.get_my_id())
+        print(game_state.player_hands)
+        print(game_state.board.game_almost_over)
         moves = util.construct_all_legal_moves(game_state)
         move = random.choice(moves)
-        print(move)
-        print(game_state.board)
         return move
 
 
@@ -154,21 +172,35 @@ class SimulatedGameController(GameController):
     Effectively, plays out current cards to the best of it's ability.
     """
     def __init__(self, game_state, deck, initial_move):
-        print("initializing simulated game controller")
-        num_players = len(game_state.player_hands)
+        # print("initializing simulated game controller")
         self.colors = game_state.board.deck_colors
         self.numbers = game_state.board.deck_numbers
-        self.players = [MCSRandomPlayer() for _ in range(num_players)]
+        self.players = [MCSRandomPlayer() for _ in range(len(game_state.player_hands))]
         self.deck = deck
         self.player_hands = game_state.player_hands
         self.master_game_state = game_state
         self.initial_move = initial_move
-        self.master_game_state = self.initial_move.apply(self.master_game_state)
-        self.master_game_state.player_id += 1
-        if self.master_game_state.player_id > num_players - 1:
-            self.master_game_state.player_id = 0
 
     def play_game(self):
+        # Apply the MCSPlayer's move, ensure the game's not over,
+        #  then start playing MCSRandom moves for subsequent turns.
+        self.master_game_state = self.initial_move.apply(self.master_game_state)
+        if self.game_over(self.master_game_state.player_id):
+            game_score = self.master_game_state.board.compute_score()
+            return game_score
+        if len(self.deck) > 0:
+            new_card = self.deck.draw_card()
+            if not new_card:
+                print("How did I get this far when the deck was empty?")
+                print(self.deck)
+                raise Exception("Deck drew card while empty")
+            self.player_hands[self.master_game_state.player_id].append(new_card)
+            self.master_game_state.player_hands = self.player_hands
+            self.master_game_state.board.deck_size = len(self.deck)
+        self.master_game_state.player_id += 1
+        if self.master_game_state.player_id > len(self.master_game_state.player_hands) - 1:
+            self.master_game_state.player_id = 0
+
         cycle_starter = range(len(self.players))
         while cycle_starter[0] != self.master_game_state.player_id:
             val = cycle_starter[0]
@@ -179,8 +211,10 @@ class SimulatedGameController(GameController):
             player_game_state = PlayerGameState(self.master_game_state, player_id)
             new_move = self.players[player_id].make_move(player_game_state)
             try:
-                print(player_id)
-                print(self.master_game_state.player_hands)
+                # print(player_id)
+                # print(self.master_game_state.player_hands)
+                # print(self.game_over(player_id))
+                # print(self.master_game_state.board)
                 self.master_game_state = new_move.apply(self.master_game_state)
             except AssertionError, e:
                 raise Exception(
@@ -189,7 +223,12 @@ class SimulatedGameController(GameController):
                 game_score = self.master_game_state.board.compute_score()
                 return game_score
             if len(self.deck) > 0:
-                self.player_hands[player_id].append(self.deck.draw_card())
+                new_card = self.deck.draw_card()
+                if not new_card:
+                    print("How did I get this far when the deck was empty?")
+                    print(self.deck)
+                    raise Exception("Deck drew card while empty")
+                self.player_hands[player_id].append(new_card)
                 self.master_game_state.player_hands = self.player_hands
                 self.master_game_state.board.deck_size = len(self.deck)
             # This triggers when the last card is drawn, every player including this one takes one more turn.
