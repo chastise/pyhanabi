@@ -3,6 +3,7 @@ from engine.player import Player
 # from engine.board import Board
 # from engine.deck import Deck
 # from engine.gamestate import GameState
+from engine.cardstack import CardStack
 import pytest
 import unittest
 
@@ -63,25 +64,25 @@ class TestGameController(unittest.TestCase):
         assert len(gc.player_hands) == 4
         assert len(gc.player_hands[0]) == 4
 
-    # TODO: game_over: every escape case works, bogus player_id fails,
+    # TODO: game_over: every escape case works, returns false when they have expected vals
     def test_game_over_no_fuse_tokens(self):
         test_player = Player()
         gc = GameController([test_player, test_player])
         gc.master_game_state.board.fuse_tokens = 0
         assert gc.game_over(0) == True
 
-    @patch()
-    def test_game_over_all_stacks_completed(self):
-        def mock_board_get_card_stack():
-            card_stack = MagicMock()
-            card_stack.is_complete.return_value = True
-            return card_stack
+    @patch('engine.board.Board.get_card_stack')
+    def test_game_over_all_stacks_completed(self, mock_get_card_stack):
+        def get_mocked_card_stack(color):
+            cs = CardStack(color='whatever')
+            cs.is_complete.return_value = True
+            return cs
+        mock_get_card_stack.return_value = get_mocked_card_stack
 
-        #patch('engine.board.Board.get_card_stack', side_effect=mock_board_get_card_stack)
-        self.patch_board.get_card_stack = mock_board_get_card_stack
         gc = GameController([Player(), Player()])
         gc.master_game_state.board.fuse_tokens = 1
 
+        assert gc.master_game_state.board.get_card_stack('somecolor').is_complete() == True
 
         assert gc.game_over(0) == True
 
