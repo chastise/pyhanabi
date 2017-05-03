@@ -32,22 +32,20 @@ class GameController(object):
                 self.player_hands[player].append(self.deck.draw_card())
         self.master_game_state.player_hands = self.player_hands
 
-    def game_over(self, player_id):
+    def game_over(self, current_player, game_state=None):
+        if game_state is None:
+            game_state=self.master_game_state
         # Check if we blew up
-        if self.master_game_state.board.fuse_tokens < 1:
+        if game_state.board.fuse_tokens < 1:
             # print("no more fuses")
             return True
         # Check if we've completed all the stacks
-        completed_stacks = 0
-        for color in self.colors:
-            stack = self.master_game_state.board.get_card_stack(color)
-            if stack.is_complete():
-                completed_stacks += 1
-        if completed_stacks == len(self.colors):
+        MAX_STACK_SCORE = 5 # Todo: figure out a better place for a global var like this
+        if game_state.board.compute_score() == (len(self.colors)*MAX_STACK_SCORE):
             # print("You win!")
             return True
         # Check if the deck is done and everyone played their final turn:
-        if player_id == self.master_game_state.board.game_almost_over:
+        if len(self.deck) == 0 and current_player == game_state.board.game_almost_over:
             # print("game almost over")
             #print(player_id)
             return True
