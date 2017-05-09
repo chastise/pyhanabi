@@ -1,14 +1,15 @@
 from engine.card import Card, YourCard
 import pytest
+import unittest
 
-class TestCard:
+class TestCard(unittest.TestCase):
     def test_init(self):
         card_1 = Card(2, 'b')
         assert card_1.color == 'b'
         assert card_1.number == 2
-        assert card_1.public_number == None
-        assert card_1.public_color == None
-        assert card_1.in_your_hand == False
+        self.assertIsNone(card_1.public_number)
+        self.assertIsNone(card_1.public_color)
+        self.assertIs(card_1.in_your_hand, False)
 
     def test_eq_true(self):
         card_1 = Card(1, 'y')
@@ -47,21 +48,22 @@ class TestCard:
             card_1.make_public('flavor')
 
 
-class TestYourCard:
+class TestYourCard(unittest.TestCase):
     def test_init(self):
         card_1 = Card(2, 'b')
         your_card_1 = YourCard(card_1)
-        assert your_card_1.number == False
-        assert your_card_1.color == False
-        assert your_card_1.public_number == None
-        assert your_card_1.public_color == None
-        assert your_card_1.in_your_hand == True
+        self.assertIs(your_card_1.number, False)
+        self.assertIs(your_card_1.color, False)
+        self.assertIsNone(your_card_1.public_number)
+        self.assertIsNone(your_card_1.public_color)
+        self.assertIs(your_card_1.in_your_hand, True)
 
     def test_cannot_make_public(self):
         card_1 = Card(2, 'b')
         your_card_1 = YourCard(card_1)
-        with pytest.raises(Exception):
+        with pytest.raises(Exception) as excinfo:
             your_card_1.make_public("color")
+        assert str(excinfo.value) == "Cannot make YourCards public because actual attributes are hidden."
 
     def test_made_public_number(self):
         card_1 = Card(2, 'b')

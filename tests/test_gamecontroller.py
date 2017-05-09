@@ -3,11 +3,10 @@ from engine.player import Player
 from engine.board import Board
 from engine.deck import Deck
 from engine.gamestate import GameState
-from engine.cardstack import CardStack
 import pytest
 import unittest
 
-from mock import MagicMock, patch, create_autospec
+from mock import create_autospec
 
 
 class TestGameController(unittest.TestCase):
@@ -70,7 +69,7 @@ class TestGameController(unittest.TestCase):
         mock_player = create_autospec(Player)
         gc = GameController([mock_player, mock_player])
         gc.master_game_state.board.fuse_tokens = 0
-        assert gc.game_over(0, gc.master_game_state) is True
+        self.assertIs(gc.game_over(0, gc.master_game_state), True)
 
     def test_game_over_all_stacks_completed(self):
         mock_game_state = create_autospec(GameState)
@@ -82,7 +81,7 @@ class TestGameController(unittest.TestCase):
         gc.master_game_state.board.fuse_tokens = 1
         # Max score for a default game. Need to update when we add wilds / configurable color counts.
         gc.master_game_state.board.compute_score.return_value = 25
-        assert gc.game_over(0, gc.master_game_state) is True
+        self.assertIs(gc.game_over(0, gc.master_game_state), True)
 
     def test_game_over_last_turn(self):
         # TODO: There's a more-clear way to manage game state and track final player turn.
@@ -99,7 +98,7 @@ class TestGameController(unittest.TestCase):
         gc.master_game_state.board = mock_board
         gc.master_game_state.board.fuse_tokens = 1
         gc.master_game_state.board.game_almost_over = 0
-        assert gc.game_over(0, gc.master_game_state)
+        self.assertIs(gc.game_over(0, gc.master_game_state), True)
 
     def test_game_over_not_over_deck_not_empty(self):
         mock_deck = create_autospec(Deck)
@@ -114,7 +113,7 @@ class TestGameController(unittest.TestCase):
         gc.master_game_state.board.fuse_tokens = 1
         gc.master_game_state.board.game_almost_over = 0
 
-        assert gc.game_over(0, gc.master_game_state) is False
+        self.assertIs(gc.game_over(0, gc.master_game_state), False)
 
     def test_game_over_not_over_deck_empty(self):
         mock_deck = create_autospec(Deck)
@@ -129,7 +128,7 @@ class TestGameController(unittest.TestCase):
         gc.master_game_state.board.fuse_tokens = 1
         gc.master_game_state.board.game_almost_over = 0
 
-        assert gc.game_over(1, gc.master_game_state) is False
+        self.assertIs(gc.game_over(1, gc.master_game_state), False)
 
 
     # TODO: Test play_game fails if player cannot make_move (may belong in make_move?)
