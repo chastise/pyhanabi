@@ -83,7 +83,7 @@ class TestDeck(unittest.TestCase):
 
     # Ensure this raises an exception
     def test_draw_card_empty(self):
-        deck = Deck(colors=('r'), numbers=(1,2))
+        deck = Deck(colors=('red', ), numbers=(1,2))
         card1 = deck.draw_card()
         card2 = deck.draw_card()
         assert len(deck) == 0
