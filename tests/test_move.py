@@ -204,9 +204,9 @@ class TestMove(unittest.TestCase):
         mock_gamestate = create_autospec(GameState)
         mock_gamestate.player_hands = [['card0', 'card1', 'card2'], ['card3', 'card4', 'card5', 'card6']]
         move = Move(move_type='discard', player_index=0, card_index=-1)
-        with pytest.raises(AssertionError) as exinfo:
+        with pytest.raises(AssertionError) as excinfo:
             move.apply(mock_gamestate)
-        assert str(exinfo.value) == 'Cannot apply move discard card index -1 in their hand, not playable.'
+        assert str(excinfo.value) == 'Cannot apply move discard card index -1 in their hand, not playable.'
 
     def test_apply_discard(self):
         """Discard should remove a card from the player's hand, add it to the discard pile and add back a clock token."""

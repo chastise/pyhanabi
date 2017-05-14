@@ -19,7 +19,8 @@ class GameController(object):
         self.colors = ('r', 'y', 'g', 'w', 'b')  # TODO: rainbow/mixed/wilds
         self.numbers = (1, 1, 1, 2, 2, 3, 3, 4, 4, 5)
         self.players = players
-        self.deck = Deck(colors=self.colors, numbers=self.numbers, seed=deck_seed)
+        self.deck = Deck(colors=self.colors, numbers=self.numbers)
+        self.deck.shuffle(seed=None)
         self.player_hands = [[] for _ in range(len(self.players))]
         self.master_game_state = GameState(Board(self.deck), self.player_hands)
 
