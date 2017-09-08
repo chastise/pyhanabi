@@ -16,12 +16,10 @@ class CardStack(object):
         self.cards_played.append(card)
 
     def is_legal_play(self, card):
-        try:
-            assert card.color == self.color
-        except AssertionError, e:
-            # This is an exception because stacks are looked up by color, so this should not happen.
-            raise Exception("Attempted to put a card on the wrong color stack. ", e)
-        return card.number == len(self.cards_played) + 1
+        if card.color != self.color:
+            return False
+        else:
+            return card.number == len(self.cards_played) + 1
 
     def get_score(self):
         return len(self.cards_played)

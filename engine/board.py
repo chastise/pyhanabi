@@ -1,4 +1,4 @@
-from engine.card import Card
+from engine.card import Card, YourCard
 from cardstack import CardStack
 
 class Board(object):
@@ -10,16 +10,19 @@ class Board(object):
         self.card_stacks = {}
         self.deck_colors = deck.card_colors
         self.deck_numbers = deck.card_numbers
+        self.game_almost_over = None
 
         for color in self.deck_colors:
             self.card_stacks[color] = CardStack(color)
         self.discard = []
         self.discard_stats = {}
         for color in self.deck_colors:
-            self.discard_stats[color] = [0] * 5
+            self.discard_stats[color] = {}
+            for number in set(self.deck_numbers):
+                self.discard_stats[color][number] = 0
 
     def __str__(self):
-        return "Deck Size: {deck_size}, Clock Tokens: {clock_tokens}, Fuse Tokens: {fuse_tokens}," \
+        return "Deck Size: {deck_size}, Clock Tokens: {clock_tokens}, Fuse Tokens: {fuse_tokens}, " \
                "Card Stacks: {card_stacks}\nDiscard Stats: {discard}".format(deck_size=self.deck_size,
                                                                              clock_tokens=self.clock_tokens,
                                                                              fuse_tokens=self.fuse_tokens,
@@ -34,14 +37,20 @@ class Board(object):
     def discard_card(self, card):
         assert isinstance(card, Card)
         self.discard.append(card)
-        self.discard_stats[card.color][card.number - 1] += 1
+        if not isinstance(card, YourCard): # Because YourCard may not know it's number/color
+            self.discard_stats[card.color][card.number] += 1
+
+    def get_count_discarded(self, card):
+        assert isinstance(card, Card)
+        return self.discard_stats[card.color][card.number]
 
     def use_clock_token(self):
         assert self.clock_tokens > 0
         self.clock_tokens -= 1
 
     def use_fuse_token(self):
-        assert self.fuse_tokens > 0
+        if self.fuse_tokens < 1:
+            raise Exception("Cannot reduce fuse tokens, current board: {board}".format(board=self))
         self.fuse_tokens -= 1
 
     def add_clock_token(self):

@@ -24,15 +24,17 @@ class Move(object):
             self.card_index = card_index
             self.information = None
         elif move_type == 'give_information':
-            assert isinstance(information, dict)
-            assert information.has_key('player_id')
-            assert information.has_key('information_type')
-            assert information.has_key('information')
+            try:
+                assert information.has_key('player_id')
+                assert information.has_key('information_type')
+                assert information.has_key('information')
+            except AssertionError, e:
+                raise AssertionError("Badly-formed dict in Move('get-information'...) constructor; {e}".format(e=e))
             self.move_type = 'give_information'
             self.card_index = None
             self.information = information
         else:
-            raise Exception('Moves must either play, discard, or share information. See the docstring for specifics')
+            raise ValueError('Moves must either play, discard, or share information.')
 
     def __str__(self):
         if self.move_type in ('play', 'discard'):
@@ -50,7 +52,8 @@ class Move(object):
         # If discard or play, just make sure the card's actually in the player's hand.
         if self.move_type in ('discard', 'play'):
             player_hand = game_state.player_hands[self.player_index]
-            return self.card_index in range(len(player_hand))
+            result = self.card_index in range(len(player_hand))
+            return result
         # If information, check if enough clock_tokens exist and ensure the player_id is not the current player.
         # Information must also be non-zero (e.g. can't indicate "no reds"), so check the target hand for at least one fit.
         elif self.move_type == 'give_information':
@@ -59,9 +62,13 @@ class Move(object):
                 return False
             if game_state.board.clock_tokens < 1:
                 return False
+            if target_player_id not in range(len(game_state.player_hands)):
+                return False
             target_hand = game_state.player_hands[target_player_id]
             information_detail = self.information['information']
             if self.information['information_type'] == 'color':
+                if self.information['information'] == 'wild':
+                    return False
                 cards_to_reveal = [c for c in target_hand if c.color == information_detail]
                 if len(cards_to_reveal) < 1:
                     return False
@@ -69,12 +76,15 @@ class Move(object):
                 cards_to_reveal = [c for c in target_hand if c.number == information_detail]
                 if len(cards_to_reveal) < 1:
                     return False
+            else:
+                # information_type isn't correct
+                return False
 
             return True
 
     # Apply the move to the game_state, returning the updated game_state.
     def apply(self, game_state):
-        assert self.is_playable(game_state)
+        assert self.is_playable(game_state), "Cannot apply move {m}, not playable.".format(m=self)
         if self.move_type == 'discard':
             player_hand = game_state.player_hands[self.player_index]
             player_card = player_hand.pop(self.card_index)
@@ -93,7 +103,6 @@ class Move(object):
                 game_state.board.discard_card(player_card)
                 game_state.board.use_fuse_token()
         elif self.move_type == 'give_information':
-            #print("applying information")
             target_player = self.information['player_id']
             target_players_hand = game_state.player_hands[target_player]
             if self.information['information_type'] == 'number':
