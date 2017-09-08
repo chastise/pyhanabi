@@ -17,7 +17,9 @@ class Board(object):
         self.discard = []
         self.discard_stats = {}
         for color in self.deck_colors:
-            self.discard_stats[color] = [0] * 5
+            self.discard_stats[color] = {}
+            for number in set(self.deck_numbers):
+                self.discard_stats[color][number] = 0
 
     def __str__(self):
         return "Deck Size: {deck_size}, Clock Tokens: {clock_tokens}, Fuse Tokens: {fuse_tokens}, " \
@@ -35,8 +37,12 @@ class Board(object):
     def discard_card(self, card):
         assert isinstance(card, Card)
         self.discard.append(card)
-        if not isinstance(card, YourCard):
-            self.discard_stats[card.color][card.number - 1] += 1
+        if not isinstance(card, YourCard): # Because YourCard may not know it's number/color
+            self.discard_stats[card.color][card.number] += 1
+
+    def get_count_discarded(self, card):
+        assert isinstance(card, Card)
+        return self.discard_stats[card.color][card.number]
 
     def use_clock_token(self):
         assert self.clock_tokens > 0

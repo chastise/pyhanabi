@@ -75,6 +75,24 @@ class TestMove(unittest.TestCase):
         move = Move(move_type='give_information', player_index=1, information=info_dict)
         assert move.is_playable(mock_gamestate)
 
+    def test_is_playable_information_known(self):
+        mock_gamestate = create_autospec(GameState)
+        mock_gamestate.board = create_autospec(Board)
+        mock_gamestate.board.clock_tokens = 1
+        mock_card = create_autospec(Card)
+        mock_card.color = 'blue'
+        mock_card.public_color = 'blue'
+        mock_card.number = 2
+        mock_card.public_number = 2
+        mock_gamestate.player_hands = [[mock_card, mock_card],
+                                       ['is_playable should', 'not look at players cards']]
+        info_dict_color = {'player_id': 0, 'information_type': 'color', 'information': 'blue'}
+        info_dict_number = {'player_id': 0, 'information_type': 'number', 'information': 2}
+        move_color = Move(move_type='give_information', player_index=1, information=info_dict_color)
+        assert move_color.is_playable(mock_gamestate)
+        move_number = Move(move_type='give_information', player_index=1, information=info_dict_number)
+        assert move_number.is_playable(mock_gamestate)
+
     def test_is_playable_information_color_subset_of_cards(self):
         mock_gamestate = create_autospec(GameState)
         mock_gamestate.board = create_autospec(Board)

@@ -1,4 +1,5 @@
 from engine.move import Move
+from engine.card import Card
 from engine.gamestate import PlayerGameState
 
 
@@ -36,6 +37,14 @@ def construct_all_legal_moves(game_state):
 
     return moves
 
+
+def split_moves_by_type(all_moves_list):
+    play_moves = [move for move in all_moves_list if move.move_type == 'play']
+    info_moves = [move for move in all_moves_list if move.move_type == 'give_information']
+    discard_moves = [move for move in all_moves_list if move.move_type == 'discard']
+    return (play_moves, info_moves, discard_moves)
+
+
 # Warning: Will construct a state with multiple YourCard hands.
 def construct_next_game_state_from_pgs(game_state, move):
     current_player = game_state.player_id
@@ -50,3 +59,30 @@ def construct_next_game_state_from_pgs(game_state, move):
         card.in_your_hand = False
     print(new_game_state)
     return new_game_state
+
+
+# Will identify whether a play can earn points. False if not or if unsure.
+def card_plays_for_points(game_state, card):
+    assert isinstance(card, Card)
+    if card.public_color is None or card.public_number is None:
+        return False
+    else:
+        return len(game_state.board.card_stacks[card.public_color].cards_played) == card.public_number
+
+
+def does_information_reveal_unknown(game_state, move):
+    assert move.is_playable(game_state)
+    assert move.move_type == 'give_information'
+    target_player_hand = game_state.player_hands[move.information['player_id']]
+    cards_revealed = 0
+    if move.information['information_type'] == 'color':
+        color = move.information['information']
+        for card in target_player_hand:
+            if card.color == color and card.public_color is None:
+                cards_revealed += 1
+    else:
+        number = move.information['information']
+        for card in target_player_hand:
+            if card.number == number and card.public_number is None:
+                cards_revealed += 1
+    return cards_revealed > 0

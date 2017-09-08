@@ -68,7 +68,7 @@ class GameController(object):
                     "{p} submitted unplayable move: {m}".format(p=str(self.players[player_id]), m=str(new_move)), e)
             if self.game_over(player_id):
                 game_score = self.master_game_state.board.compute_score()
-                print("Game over: Score {score}".format(score=game_score))
+                #print("Game over: Score {score}".format(score=game_score))
                 return game_score
             if len(self.deck) > 0:
                 self.player_hands[player_id].append(self.deck.draw_card())
